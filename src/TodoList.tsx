@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { addTodo, deleteTodo, sortTodos } from "./todoSlice";
 
 type Todo = {
   id: string;
@@ -8,29 +10,28 @@ type Todo = {
 };
 
 const TodoList = () => {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const dispatch = useDispatch();
+  const todos = useSelector((state: any) => state.todo.todos);
   const [newTodoText, setNewTodoText] = useState<string>("");
   const [filterDescending, setFilterDescending] = useState<boolean>(false);
 
-  const addTodo = (event: React.FormEvent<HTMLFormElement>) => {
+  const add = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setTodos([...todos, { id: uuidv4(), text: newTodoText }]);
+    dispatch(addTodo(newTodoText));
     setNewTodoText("");
   };
 
-  const removeTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const removeTodo = (id: number) => {
+    dispatch(deleteTodo(id));
   };
 
-  const sortTodos = (desc: boolean) => {
-    setTodos(
-      todos.sort((a, b) => (desc ? 1 : -1) * a.text.localeCompare(b.text))
-    );
+  const sort = (desc: boolean) => {
+    dispatch(sortTodos(desc));
   };
 
   return (
     <>
-      <form onSubmit={addTodo}>
+      <form onSubmit={add}>
         <input
           placeholder="Skriv en todo..."
           onChange={(event) => setNewTodoText(event.target.value)}
@@ -45,16 +46,16 @@ const TodoList = () => {
         <button
           onClick={() => {
             setFilterDescending(!filterDescending);
-            sortTodos(filterDescending);
+            sort(filterDescending);
           }}
         >
           {filterDescending ? <FaArrowUp /> : <FaArrowDown />}
         </button>
       </h2>
 
-      {todos.length ? (
+      {todos && todos.length ? (
         <ul>
-          {todos.map((todo) => (
+          {todos.map((todo: any) => (
             <li key={todo.id}>
               {todo.text}{" "}
               <button onClick={() => removeTodo(todo.id)}>Ta bort</button>
